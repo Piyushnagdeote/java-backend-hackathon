@@ -1,5 +1,8 @@
 /target
 /.idea
 *.log
-*.txt
-*.iml
+*.class
+*.jar
+.env
+node_modules
+.DS_Store
