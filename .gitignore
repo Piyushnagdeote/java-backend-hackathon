@@ -1,8 +1,14 @@
-/target
-/.idea
+# Maven
+/target/
 *.log
-*.class
-*.jar
-.env
-node_modules
+
+# IntelliJ
+.idea/
+*.iml
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Env
+.env
