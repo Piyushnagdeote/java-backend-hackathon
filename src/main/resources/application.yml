@@ -1,34 +1,35 @@
 server:
   port: 8080
+  address: 0.0.0.0
 
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/platform_db?useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://mysql-db:3306/platform_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: platform_user
     password: StrongPassword@123
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
   flyway:
-    enabled: true
+    enabled: false
     baseline-on-migrate: true
     validate-on-migrate: false
+    connect-retries: 10
 
-# 🔐 JWT CONFIG (CORRECT)
 jwt:
   secret: my-super-secure-secret-key-which-is-at-least-32-characters
-  expiration: 3600000          # 1 hour
-  refresh-expiration: 86400000 # 1 day
+  expiration: 3600000
+  refresh-expiration: 86400000
 
-logging:
-  level:
-    root: INFO
-    org.springframework.security: DEBUG
-    org.springframework.security.authentication: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

@@ -28,8 +28,6 @@
 
     <dependencies>
 
-        <!-- ================= CORE ================= -->
-
         <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -42,45 +40,39 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- JPA / Hibernate -->
+        <!-- JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- ================= DATABASE ================= -->
-
-        <!-- MySQL Driver -->
+        <!-- MySQL -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway Core -->
+        <!-- Flyway -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>10.4.1</version>
         </dependency>
 
-        <!-- Flyway MySQL Support -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-mysql</artifactId>
             <version>10.4.1</version>
         </dependency>
 
-        <!-- ================= JWT ================= -->
-
-        <!-- JWT API -->
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
             <version>0.11.5</version>
         </dependency>
 
-        <!-- JWT Implementation -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
@@ -88,7 +80,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- JWT Jackson Serializer -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
@@ -96,16 +87,18 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ================= API DOCS ================= -->
+        <!-- Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
-        <!-- Swagger / OpenAPI -->
+        <!-- Swagger -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.3.0</version>
         </dependency>
-
-        <!-- ================= UTILS ================= -->
 
         <!-- Lombok -->
         <dependency>
@@ -114,27 +107,14 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- ================= TESTING ================= -->
-
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-
-
     </dependencies>
-
-
-
-
-    <!-- ================= BUILD ================= -->
 
     <build>
         <plugins>

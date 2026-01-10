@@ -24,7 +24,7 @@ public class SecurityConfig {
 
         http
                 // Disable CSRF for JWT
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
 
                 // Stateless session
                 .sessionManagement(session ->
