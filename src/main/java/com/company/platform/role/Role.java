@@ -1,6 +1,8 @@
 package com.company.platform.role;
 
+import com.company.platform.user.User;
 import jakarta.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "roles")
@@ -10,20 +12,17 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String name; // ROLE_USER, ROLE_ADMIN
+    @Column(unique = true)
+    private String name;
 
-    public Role() {}
+    @ManyToMany(mappedBy = "roles")
+    private Set<User> users;
 
-    public Role(String name) {
-        this.name = name;
-    }
+    public Long getId() { return id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public Set<User> getUsers() { return users; }
+    public void setUsers(Set<User> users) { this.users = users; }
 }

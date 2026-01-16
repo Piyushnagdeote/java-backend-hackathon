@@ -2,15 +2,15 @@ package com.company.platform.auth.controller;
 
 import com.company.platform.auth.dto.LoginRequest;
 import com.company.platform.auth.dto.RegisterRequest;
+import com.company.platform.auth.service.AuthService;
 import com.company.platform.security.JwtService;
-import com.company.platform.user.UserService;
-import com.company.platform.user.User;
-import com.company.platform.role.Role;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,60 +18,51 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserService userService;
+    private final AuthService authService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtService jwtService,
-                          UserService userService) {
+                          AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.userService = userService;
+        this.authService = authService;
     }
 
-    // REGISTER
-    @PostMapping("/register")
-    public Map<String, String> register(@RequestBody RegisterRequest request) {
-        userService.registerUser(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword()
-        );
-        return Map.of("message", "User registered successfully");
-    }
-
-    // LOGIN
+    // ================= LOGIN =================
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        Authentication authentication = authenticationManager.authenticate(
+        Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
+                        request.getEmail(),
                         request.getPassword()
                 )
         );
 
-        List<String> roles = authentication.getAuthorities()
+        List<String> roles = auth.getAuthorities()
                 .stream()
-                .map(a -> a.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        String accessToken = jwtService.generateAccessToken(
-                request.getUsername(),
-                roles
-        );
+        String accessToken = jwtService.generateAccessToken(request.getEmail(), roles);
+        String refreshToken = jwtService.generateRefreshToken(request.getEmail());
 
-        String refreshToken = jwtService.generateRefreshToken(
-                request.getUsername()
-        );
-
-        return Map.of(
+        return ResponseEntity.ok(Map.of(
                 "accessToken", accessToken,
-                "refreshToken", refreshToken
-        );
+                "refreshToken", refreshToken,
+                "email", request.getEmail(),
+                "roles", roles
+        ));
+    }
+
+    // ================= REGISTER =================
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        return authService.register(request);
     }
 }
-
