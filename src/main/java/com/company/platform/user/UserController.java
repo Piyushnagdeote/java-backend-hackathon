@@ -1,7 +1,8 @@
 package com.company.platform.user;
 
-import com.company.platform.user.dto.UserDto;
+import com.company.platform.api.ResponseUtil;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,17 +16,18 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/test")
-    public String userAccess() {
-        return "USER ACCESS OK";
-    }
+    // 🔐 Current logged in user
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> me(Authentication authentication) {
 
-    @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(Authentication authentication) {
+        String email = authentication.getName();
 
-        String username = authentication.getName();
-        UserDto user = userService.getUserByUsername(username);
-
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(
+                ResponseUtil.success(
+                        "User profile fetched",
+                        userService.getUserByEmail(email)
+                )
+        );
     }
 }

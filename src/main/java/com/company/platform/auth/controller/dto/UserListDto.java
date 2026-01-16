@@ -1,12 +1,12 @@
 package com.company.platform.user.dto;
 
-public class UserDto {
+public class UserListDto {
 
-    private final Long id;
-    private final String username;
-    private final String email;
+    private Long id;
+    private String username;
+    private String email;
 
-    public UserDto(Long id, String username, String email) {
+    public UserListDto(Long id, String username, String email) {
         this.id = id;
         this.username = username;
         this.email = email;

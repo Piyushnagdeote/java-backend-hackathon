@@ -1,61 +1,113 @@
 package com.company.platform.user;
 
+import com.company.platform.common.entity.BaseEntity;
 import com.company.platform.role.Role;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    // 🔹 ID is inherited from BaseEntity
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
     private boolean enabled = true;
+
+    @Column(nullable = false)
+    private int failedAttempts = 0;
+
+    private LocalDateTime lockTime;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
+            name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_id") // matches DB
     )
     private Set<Role> roles = new HashSet<>();
 
-    // ===== GETTERS =====
-    public Long getId() { return id; }
+    // ================== GETTERS ==================
 
-    public String getUsername() { return username; }
+    public Long getId() {
+        return super.getId();
+    }
 
-    public String getEmail() { return email; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getPassword() { return password; }
+    public String getEmail() {
+        return email;
+    }
 
-    public boolean isEnabled() { return enabled; }
+    public String getPassword() {
+        return password;
+    }
 
-    public Set<Role> getRoles() { return roles; }
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-    // ===== SETTERS =====
-    public void setId(Long id) { this.id = id; }
+    public int getFailedAttempts() {
+        return failedAttempts;
+    }
 
-    public void setUsername(String username) { this.username = username; }
+    public LocalDateTime getLockTime() {
+        return lockTime;
+    }
 
-    public void setEmail(String email) { this.email = email; }
+    public Set<Role> getRoles() {
+        return roles;
+    }
 
-    public void setPassword(String password) { this.password = password; }
+    // ================== SETTERS ==================
 
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public void setId(Long id) {
+        super.setId(id);   // 🔥 this fixes your test error
+    }
 
-    public void setRoles(Set<Role> roles) { this.roles = roles; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setFailedAttempts(int failedAttempts) {
+        this.failedAttempts = failedAttempts;
+    }
+
+    public void setLockTime(LocalDateTime lockTime) {
+        this.lockTime = lockTime;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 }

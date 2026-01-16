@@ -1,28 +1,45 @@
 package com.company.platform.role;
 
+import com.company.platform.common.entity.BaseEntity;
 import com.company.platform.user.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "roles")
-public class Role {
+@SQLDelete(sql = "UPDATE roles SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class Role extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    // 🔹 ID comes from BaseEntity
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String name;
 
     @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    private Set<User> users = new HashSet<>();
 
-    public Long getId() { return id; }
+    // ================== GETTERS ==================
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public Set<User> getUsers() { return users; }
-    public void setUsers(Set<User> users) { this.users = users; }
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    // ================== SETTERS ==================
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
+    }
 }

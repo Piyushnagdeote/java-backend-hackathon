@@ -28,6 +28,7 @@
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
+    <!-- ================= DEPENDENCIES ================= -->
     <dependencies>
 
         <!-- Web -->
@@ -115,6 +116,13 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <!-- OkHttp -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -122,17 +130,13 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-    <groupId>com.squareup.okhttp3</groupId>
-    <artifactId>okhttp</artifactId>
-    <version>4.12.0</version>
-</dependency>
-
-
     </dependencies>
 
+    <!-- ================= BUILD PLUGINS ================= -->
     <build>
         <plugins>
+
+            <!-- Spring Boot Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -140,6 +144,19 @@
                     <mainClass>com.company.platform.PlatformApplication</mainClass>
                 </configuration>
             </plugin>
+
+            <!-- Flyway Maven Plugin -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>10.4.1</version>
+                <configuration>
+                    <url>jdbc:mysql://localhost:3306/platform_db</url>
+                    <user>platform_user</user>
+                    <password>StrongPassword@123</password>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

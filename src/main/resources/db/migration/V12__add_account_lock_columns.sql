@@ -1,0 +1,3 @@
+ALTER TABLE users
+ADD COLUMN failed_attempts INT DEFAULT 0,
+ADD COLUMN lock_time DATETIME NULL;
