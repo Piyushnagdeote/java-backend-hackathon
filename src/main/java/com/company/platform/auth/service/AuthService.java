@@ -49,15 +49,18 @@ public class AuthService {
                     .body(Map.of("message", "Email already exists"));
         }
 
-        // 🔥 FIXED ROLE LOOKUP
+        // ✅ ROLE NORMALIZATION FIX
         String roleName = request.getRole().trim().toUpperCase();
+        String finalRole = roleName.startsWith("ROLE_")
+                ? roleName
+                : "ROLE_" + roleName;
 
-        log.info("Looking for role in DB: {}", roleName);
+        log.info("Looking for role in DB: {}", finalRole);
 
-        Role role = roleRepository.findByNameIgnoreCase(roleName)
+        Role role = roleRepository.findByNameIgnoreCase(finalRole)
                 .orElseThrow(() -> {
-                    log.error("Role not found in DB: {}", roleName);
-                    return new RuntimeException("Role not found: " + roleName);
+                    log.error("Role not found in DB: {}", finalRole);
+                    return new RuntimeException("Role not found: " + finalRole);
                 });
 
         User user = new User();
