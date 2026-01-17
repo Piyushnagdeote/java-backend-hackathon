@@ -28,9 +28,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .authorities(
                         user.getRoles()
                                 .stream()
-                                .map(Role::getName)
+                                .map(Role::getName)   // 🔥 already ROLE_ prefixed in DB
                                 .toArray(String[]::new)
                 )
                 .build();
     }
+
+
 }
+
