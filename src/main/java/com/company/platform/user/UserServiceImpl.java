@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
                     return new UserNotFoundException("User not found with email: " + email);
                 });
 
-        Role role = roleRepository.findByName(roleName)
+        Role role = roleRepository.findByNameIgnoreCase(roleName)
                 .orElseThrow(() -> {
                     log.error("Role not found: {}", roleName);
                     return new RuntimeException("Role not found: " + roleName);

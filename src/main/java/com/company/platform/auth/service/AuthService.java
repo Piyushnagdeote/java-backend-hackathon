@@ -26,7 +26,6 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 🔐 Security policy
     private static final int MAX_FAILED_ATTEMPTS = 5;
     private static final int LOCK_TIME_MINUTES = 15;
 
@@ -50,10 +49,15 @@ public class AuthService {
                     .body(Map.of("message", "Email already exists"));
         }
 
-        Role role = roleRepository.findByName(request.getRole())
+        // 🔥 FIXED ROLE LOOKUP
+        String roleName = request.getRole().trim().toUpperCase();
+
+        log.info("Looking for role in DB: {}", roleName);
+
+        Role role = roleRepository.findByNameIgnoreCase(roleName)
                 .orElseThrow(() -> {
-                    log.error("Role not found: {}", request.getRole());
-                    return new RuntimeException("Role not found: " + request.getRole());
+                    log.error("Role not found in DB: {}", roleName);
+                    return new RuntimeException("Role not found: " + roleName);
                 });
 
         User user = new User();

@@ -29,8 +29,9 @@ public abstract class BaseEntity {
     private String createdBy;
 
     // ================= SOFT DELETE =================
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BIT(1)")
     private boolean deleted = false;
+
 
     // ================= OPTIMISTIC LOCK =================
     @Version

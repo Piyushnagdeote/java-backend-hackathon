@@ -11,32 +11,37 @@ import java.util.Set;
 
 @Entity
 @Table(name = "roles")
-@SQLDelete(sql = "UPDATE roles SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLDelete(sql = "UPDATE roles SET deleted = 1 WHERE id = ?")
+@Where(clause = "deleted = 0")
 public class Role extends BaseEntity {
-
-    // 🔹 ID comes from BaseEntity
 
     @Column(unique = true, nullable = false)
     private String name;
 
+    @Column(nullable = false, columnDefinition = "BIT(1)")
+    private boolean deleted = false;
+
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
 
-    // ================== GETTERS ==================
-
     public String getName() {
         return name;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
 
     public Set<User> getUsers() {
         return users;
     }
 
-    // ================== SETTERS ==================
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public void setUsers(Set<User> users) {
