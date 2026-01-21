@@ -1,28 +1,17 @@
 CREATE TABLE users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    enabled BOOLEAN DEFAULT TRUE
-);
+    email VARCHAR(255) UNIQUE,
+    enabled BOOLEAN DEFAULT TRUE,
 
-CREATE TABLE roles (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) UNIQUE NOT NULL
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_by VARCHAR(100),
 
-CREATE TABLE permissions (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) UNIQUE NOT NULL
-);
+    deleted BOOLEAN DEFAULT FALSE,
+    version BIGINT DEFAULT 0,
 
-CREATE TABLE user_roles (
-    user_id BIGINT,
-    role_id BIGINT,
-    PRIMARY KEY (user_id, role_id)
-);
-
-CREATE TABLE role_permissions (
-    role_id BIGINT,
-    permission_id BIGINT,
-    PRIMARY KEY (role_id, permission_id)
+    failed_attempts INT DEFAULT 0,
+    lock_time DATETIME NULL
 );

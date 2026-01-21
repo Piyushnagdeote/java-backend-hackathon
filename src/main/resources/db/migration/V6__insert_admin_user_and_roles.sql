@@ -1,0 +1,6 @@
+INSERT IGNORE INTO roles(name, deleted) VALUES
+('ROLE_ADMIN', 0),
+('ROLE_USER', 0),
+('ROLE_EMPLOYEE', 0),
+('ROLE_HR', 0),
+('ROLE_MANAGER', 0);

@@ -18,7 +18,7 @@ public class UserController {
 
     // 🔐 Current logged in user
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<?> me(Authentication authentication) {
 
         String email = authentication.getName();
@@ -27,6 +27,20 @@ public class UserController {
                 ResponseUtil.success(
                         "User profile fetched",
                         userService.getUserByEmail(email)
+                )
+        );
+    }
+
+
+    // 🔐 Admin fetch any user by username
+    @GetMapping("/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getUser(@PathVariable String username) {
+
+        return ResponseEntity.ok(
+                ResponseUtil.success(
+                        "User fetched",
+                        userService.getUserByUsername(username)
                 )
         );
     }

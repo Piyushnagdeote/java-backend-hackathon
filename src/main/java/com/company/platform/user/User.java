@@ -16,7 +16,7 @@ import java.util.Set;
 @Where(clause = "deleted = false")
 public class User extends BaseEntity {
 
-    // 🔹 ID is inherited from BaseEntity
+    // ================= BASIC FIELDS =================
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -35,15 +35,17 @@ public class User extends BaseEntity {
 
     private LocalDateTime lockTime;
 
+    // ================= ROLE MAPPING (FIXED) =================
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "users_roles",
+            name = "user_roles",               // ✅ matches DB
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "roles_id") // matches DB
+            inverseJoinColumns = @JoinColumn(name = "role_id")  // ✅ matches DB
     )
     private Set<Role> roles = new HashSet<>();
 
-    // ================== GETTERS ==================
+    // ================= GETTERS =================
 
     public Long getId() {
         return super.getId();
@@ -77,10 +79,10 @@ public class User extends BaseEntity {
         return roles;
     }
 
-    // ================== SETTERS ==================
+    // ================= SETTERS =================
 
     public void setId(Long id) {
-        super.setId(id);   // 🔥 this fixes your test error
+        super.setId(id);
     }
 
     public void setUsername(String username) {
