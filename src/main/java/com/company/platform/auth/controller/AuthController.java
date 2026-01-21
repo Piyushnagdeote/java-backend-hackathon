@@ -1,20 +1,17 @@
 package com.company.platform.auth.controller;
 
-import com.company.platform.auth.dto.LoginRequest;
-import com.company.platform.auth.dto.RefreshRequest;
-import com.company.platform.auth.dto.RegisterRequest;
-import com.company.platform.auth.dto.TokenResponse;
-
+import com.company.platform.auth.dto.*;
 import com.company.platform.auth.entity.RefreshToken;
 import com.company.platform.auth.repository.RefreshTokenRepository;
 import com.company.platform.auth.service.AuthService;
 import com.company.platform.auth.service.RefreshTokenService;
-
 import com.company.platform.entity.BlacklistedToken;
 import com.company.platform.repository.BlacklistedTokenRepository;
-
 import com.company.platform.security.JwtService;
 import com.company.platform.user.User;
+import com.company.platform.auth.dto.RefreshRequest;
+import com.company.platform.auth.dto.TokenResponse;
+
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +64,7 @@ public class AuthController {
                 )
         );
 
+        // ✅ FINAL correct role extraction
         List<String> roles = auth.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
@@ -103,12 +101,11 @@ public class AuthController {
 
         User user = token.getUser();
 
-        // 🔥 ROTATION
         refreshTokenRepository.delete(token);
 
         List<String> roles = user.getRoles()
                 .stream()
-                .map(r -> r.getName())
+                .map(r -> r.getName()) // already correct
                 .toList();
 
         String newAccessToken = jwtService.generateAccessToken(user.getEmail(), roles);
@@ -119,7 +116,6 @@ public class AuthController {
                 new TokenResponse(newAccessToken, newRefreshToken.getToken())
         );
     }
-
 
     // ================= LOGOUT =================
     @PostMapping("/logout")

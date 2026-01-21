@@ -26,23 +26,19 @@ public class JwtService {
     // ================= TOKEN GENERATION =================
 
     public String generateAccessToken(String username, List<String> roles) {
+        List<String> normalizedRoles = roles.stream()
+                .map(r -> r.startsWith("ROLE_") ? r.replace("ROLE_ROLE_", "ROLE_") : r)
+                .toList();
+
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roles)
+                .claim("roles", normalizedRoles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
 
     // ================= VALIDATION =================
 

@@ -46,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // ✅ Bypass JWT for auth & actuator
         if (path.startsWith("/api/v1/auth") || path.startsWith("/actuator")) {
             filterChain.doFilter(request, response);
             return;
@@ -54,7 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // No token → continue chain
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -62,53 +60,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String token = authHeader.substring(7);
 
-        // 🔥 Blacklist enforcement
         if (blacklistRepo.existsByToken(token)) {
-            log.warn("Blocked blacklisted token");
-            SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token is blacklisted. Please login again.");
             return;
         }
 
-        String username;
+        String email;
 
         try {
-            username = jwtService.extractUsername(token);
+            email = jwtService.extractUsername(token);
         } catch (Exception e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (username != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(username);
+            var roles = jwtService.extractRoles(token);
 
-            if (jwtService.isTokenValid(token, userDetails)) {
+            var authorities = roles.stream()
+                    .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
+                    .toList();
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                log.info("JWT authentication successful for user: {}", username);
-            } else {
-                log.warn("JWT validation failed for user: {}", username);
-            }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
     }
-
 }

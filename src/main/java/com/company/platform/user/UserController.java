@@ -18,7 +18,7 @@ public class UserController {
 
     // 🔐 Current logged in user
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE','HR','MANAGER')")
     public ResponseEntity<?> me(Authentication authentication) {
 
         String email = authentication.getName();
@@ -30,6 +30,7 @@ public class UserController {
                 )
         );
     }
+
 
 
     // 🔐 Admin fetch any user by username
