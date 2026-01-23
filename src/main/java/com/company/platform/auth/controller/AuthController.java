@@ -55,9 +55,24 @@ public class AuthController {
 
     // ================= LOGIN =================
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
 
-        // 🔐 Fetch user from DB first
+
+        // 🔐 Basic input validation
+        if (request.getEmail() == null || request.getPassword() == null) {
+            return ResponseEntity
+                    .status(400)
+                    .body(Map.of("message", "Email and password are required"));
+        }
+
+        // 🔐 Role must be provided
+        if (request.getRole() == null || request.getRole().isBlank()) {
+            return ResponseEntity
+                    .status(400)
+                    .body(Map.of("message", "Role is required for login"));
+        }
+
+        // 🔐 Fetch user from DB
         User user = authService.getUserByEmail(request.getEmail());
 
         // 🔐 Normalize request role
@@ -95,7 +110,6 @@ public class AuthController {
                 .toList();
 
         String accessToken = jwtService.generateAccessToken(request.getEmail(), roles);
-
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         return ResponseEntity.ok(Map.of(
