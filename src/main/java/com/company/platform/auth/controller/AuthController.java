@@ -1,6 +1,9 @@
 package com.company.platform.auth.controller;
 
-import com.company.platform.auth.dto.*;
+import com.company.platform.auth.dto.LoginRequest;
+import com.company.platform.auth.dto.RefreshRequest;
+import com.company.platform.auth.dto.RegisterRequest;
+import com.company.platform.auth.dto.TokenResponse;
 import com.company.platform.auth.entity.RefreshToken;
 import com.company.platform.auth.repository.RefreshTokenRepository;
 import com.company.platform.auth.service.AuthService;
@@ -9,9 +12,6 @@ import com.company.platform.entity.BlacklistedToken;
 import com.company.platform.repository.BlacklistedTokenRepository;
 import com.company.platform.security.JwtService;
 import com.company.platform.user.User;
-import com.company.platform.auth.dto.RefreshRequest;
-import com.company.platform.auth.dto.TokenResponse;
-
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +57,31 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
+        // 🔐 Fetch user from DB first
+        User user = authService.getUserByEmail(request.getEmail());
+
+        // 🔐 Normalize request role
+        String requestRole = request.getRole().trim().toUpperCase();
+        if (!requestRole.startsWith("ROLE_")) {
+            requestRole = "ROLE_" + requestRole;
+        }
+
+        // 🔐 Get DB role
+        String dbRole = user.getRoles()
+                .iterator()
+                .next()
+                .getName();
+
+        // 🔴 ROLE VALIDATION
+        if (!dbRole.equalsIgnoreCase(requestRole)) {
+            return ResponseEntity
+                    .status(403)
+                    .body(Map.of(
+                            "message", "Selected role does not match your account role"
+                    ));
+        }
+
+        // 🔐 Authenticate credentials
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -64,7 +89,6 @@ public class AuthController {
                 )
         );
 
-        // ✅ FINAL correct role extraction
         List<String> roles = auth.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
@@ -72,7 +96,6 @@ public class AuthController {
 
         String accessToken = jwtService.generateAccessToken(request.getEmail(), roles);
 
-        User user = authService.getUserByEmail(request.getEmail());
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         return ResponseEntity.ok(Map.of(
@@ -105,7 +128,7 @@ public class AuthController {
 
         List<String> roles = user.getRoles()
                 .stream()
-                .map(r -> r.getName()) // already correct
+                .map(r -> r.getName())
                 .toList();
 
         String newAccessToken = jwtService.generateAccessToken(user.getEmail(), roles);
