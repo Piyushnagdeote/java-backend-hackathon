@@ -34,23 +34,23 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final AuthService authService;
-    private final RefreshTokenService refreshTokenService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
     private final BlacklistedTokenRepository blacklistedTokenRepository;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             AuthService authService,
-            RefreshTokenService refreshTokenService,
             RefreshTokenRepository refreshTokenRepository,
+            RefreshTokenService refreshTokenService,
             BlacklistedTokenRepository blacklistedTokenRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.authService = authService;
-        this.refreshTokenService = refreshTokenService;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenService = refreshTokenService;
         this.blacklistedTokenRepository = blacklistedTokenRepository;
     }
 
@@ -58,34 +58,45 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
 
-        // 1️⃣ Authenticate credentials
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-
-        // 2️⃣ Fetch user from DB
         User user = authService.getUserByEmail(request.getEmail());
 
-        // 3️⃣ Extract roles from DB
-        List<String> roles = authentication.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+        authService.unlockIfExpired(user);
 
-        // 4️⃣ Generate tokens
-        String accessToken = jwtService.generateAccessToken(user.getEmail(), roles);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        if (authService.isAccountLocked(user)) {
+            return ResponseEntity.status(423)
+                    .body(Map.of("message", "Account is locked. Try again later."));
+        }
 
-        // 5️⃣ Response
-        return ResponseEntity.ok(Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken.getToken(),
-                "email", user.getEmail(),
-                "roles", roles
-        ));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+
+            authService.resetFailedAttempts(user);
+
+            List<String> roles = authentication.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+
+            String accessToken = jwtService.generateAccessToken(user.getEmail(), roles);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "accessToken", accessToken,
+                    "refreshToken", refreshToken.getToken(),
+                    "email", user.getEmail(),
+                    "roles", roles
+            ));
+
+        } catch (Exception e) {
+            authService.increaseFailedAttempts(user);
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", "Invalid email or password"));
+        }
     }
 
     // ================= REGISTER =================

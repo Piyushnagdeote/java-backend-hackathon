@@ -1,4 +1,6 @@
-INSERT IGNORE INTO roles(name, deleted) VALUES
-('ROLE_EMPLOYEE', 0),
-('ROLE_HR', 0),
-('ROLE_MANAGER', 0);
+-- V15__ensure_all_roles.sql
+INSERT IGNORE INTO roles (name) VALUES
+('ROLE_ADMIN'),
+('ROLE_EMPLOYEE'),
+('ROLE_HR'),
+('ROLE_MANAGER');
