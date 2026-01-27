@@ -34,22 +34,23 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final AuthService authService;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final BlacklistedTokenRepository blacklistedTokenRepository;
 
-    public AuthController(AuthenticationManager authenticationManager,
-                          JwtService jwtService,
-                          AuthService authService,
-                          RefreshTokenRepository refreshTokenRepository,
-                          RefreshTokenService refreshTokenService,
-                          BlacklistedTokenRepository blacklistedTokenRepository) {
-
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            AuthService authService,
+            RefreshTokenService refreshTokenService,
+            RefreshTokenRepository refreshTokenRepository,
+            BlacklistedTokenRepository blacklistedTokenRepository
+    ) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.authService = authService;
-        this.refreshTokenRepository = refreshTokenRepository;
         this.refreshTokenService = refreshTokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.blacklistedTokenRepository = blacklistedTokenRepository;
     }
 
@@ -57,65 +58,30 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
 
-
-        // 🔐 Basic input validation
-        if (request.getEmail() == null || request.getPassword() == null) {
-            return ResponseEntity
-                    .status(400)
-                    .body(Map.of("message", "Email and password are required"));
-        }
-
-        // 🔐 Role must be provided
-        if (request.getRole() == null || request.getRole().isBlank()) {
-            return ResponseEntity
-                    .status(400)
-                    .body(Map.of("message", "Role is required for login"));
-        }
-
-        // 🔐 Fetch user from DB
-        User user = authService.getUserByEmail(request.getEmail());
-
-        // 🔐 Normalize request role
-        String requestRole = request.getRole().trim().toUpperCase();
-        if (!requestRole.startsWith("ROLE_")) {
-            requestRole = "ROLE_" + requestRole;
-        }
-
-        // 🔐 Get DB role
-        String dbRole = user.getRoles()
-                .iterator()
-                .next()
-                .getName();
-
-        // 🔴 ROLE VALIDATION
-        if (!dbRole.equalsIgnoreCase(requestRole)) {
-            return ResponseEntity
-                    .status(403)
-                    .body(Map.of(
-                            "message", "Selected role does not match your account role"
-                    ));
-        }
-
-        // 🔐 Authenticate credentials
-        Authentication auth = authenticationManager.authenticate(
+        // Authenticate credentials
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
 
-        List<String> roles = auth.getAuthorities()
+        // Fetch user
+        User user = authService.getUserByEmail(request.getEmail());
+
+        // Extract roles from DB
+        List<String> roles = authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        String accessToken = jwtService.generateAccessToken(request.getEmail(), roles);
+        String accessToken = jwtService.generateAccessToken(user.getEmail(), roles);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         return ResponseEntity.ok(Map.of(
                 "accessToken", accessToken,
                 "refreshToken", refreshToken.getToken(),
-                "email", request.getEmail(),
+                "email", user.getEmail(),
                 "roles", roles
         ));
     }
@@ -123,7 +89,7 @@ public class AuthController {
     // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+        return authService.register(request);
     }
 
     // ================= REFRESH =================
@@ -137,7 +103,6 @@ public class AuthController {
         refreshTokenService.verifyExpiration(token);
 
         User user = token.getUser();
-
         refreshTokenRepository.delete(token);
 
         List<String> roles = user.getRoles()
@@ -146,7 +111,6 @@ public class AuthController {
                 .toList();
 
         String newAccessToken = jwtService.generateAccessToken(user.getEmail(), roles);
-
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
         return ResponseEntity.ok(
@@ -164,10 +128,11 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Authorization header missing");
         }
 
-        String token = authHeader.substring(7);
-
         blacklistedTokenRepository.save(
-                new BlacklistedToken(token, LocalDateTime.now().plusDays(1))
+                new BlacklistedToken(
+                        authHeader.substring(7),
+                        LocalDateTime.now().plusDays(1)
+                )
         );
 
         return ResponseEntity.ok("Logged out successfully");

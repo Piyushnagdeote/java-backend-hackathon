@@ -12,8 +12,7 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @NotBlank(message = "Role is required")
-    private String role;
+    // ✅ NO ROLE FIELD
 
     public String getEmail() {
         return email;
@@ -23,19 +22,11 @@ public class LoginRequest {
         return password;
     }
 
-    public String getRole() {
-        return role;
-    }
-
     public void setEmail(String email) {
         this.email = email;
     }
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }
