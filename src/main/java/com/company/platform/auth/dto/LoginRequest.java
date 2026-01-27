@@ -12,8 +12,6 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    // ✅ NO ROLE FIELD
-
     public String getEmail() {
         return email;
     }

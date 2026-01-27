@@ -58,7 +58,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
 
-        // Authenticate credentials
+        // 1️⃣ Authenticate credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -66,18 +66,20 @@ public class AuthController {
                 )
         );
 
-        // Fetch user
+        // 2️⃣ Fetch user from DB
         User user = authService.getUserByEmail(request.getEmail());
 
-        // Extract roles from DB
+        // 3️⃣ Extract roles from DB
         List<String> roles = authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
+        // 4️⃣ Generate tokens
         String accessToken = jwtService.generateAccessToken(user.getEmail(), roles);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
+        // 5️⃣ Response
         return ResponseEntity.ok(Map.of(
                 "accessToken", accessToken,
                 "refreshToken", refreshToken.getToken(),
